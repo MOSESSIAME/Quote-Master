@@ -10,11 +10,11 @@ class QuotationDetailScreen extends StatefulWidget {
   final ValueChanged<Quotation> onEdit;
 
   const QuotationDetailScreen({
-    Key? key,
+    super.key,
     required this.quotation,
     required this.onDelete,
     required this.onEdit,
-  }) : super(key: key);
+  });
 
   @override
   State<QuotationDetailScreen> createState() => _QuotationDetailScreenState();

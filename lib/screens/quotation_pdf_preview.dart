@@ -12,10 +12,10 @@ class QuotationPdfPreview extends StatelessWidget {
   final bool showUnitPrice;
 
   const QuotationPdfPreview({
-    Key? key,
+    super.key,
     required this.quotation,
     this.showUnitPrice = true,
-  }) : super(key: key);
+  });
 
   Future<Uint8List> _buildPdf(PdfPageFormat format) async {
     final doc = pw.Document();
@@ -71,17 +71,17 @@ class QuotationPdfPreview extends StatelessWidget {
             ),
             ...quotation.items.map((item) {
               final row = [
-                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.code}', style: pw.TextStyle(fontSize: 9))),
-                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.description}', style: pw.TextStyle(fontSize: 9))),
+                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text(item.code, style: pw.TextStyle(fontSize: 9))),
+                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text(item.description, style: pw.TextStyle(fontSize: 9))),
                 pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.width}', style: pw.TextStyle(fontSize: 9))),
                 pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.height}', style: pw.TextStyle(fontSize: 9))),
                 pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.quantity}', style: pw.TextStyle(fontSize: 9))),
-                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.area.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9))),
+                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text(item.area.toStringAsFixed(2), style: pw.TextStyle(fontSize: 9))),
               ];
               if (showUnitPrice) {
-                row.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.unitPrice.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9))));
+                row.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text(item.unitPrice.toStringAsFixed(2), style: pw.TextStyle(fontSize: 9))));
               }
-              row.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.netPrice.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9))));
+              row.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text(item.netPrice.toStringAsFixed(2), style: pw.TextStyle(fontSize: 9))));
               return pw.TableRow(children: row);
             }),
           ];
@@ -135,7 +135,7 @@ class QuotationPdfPreview extends StatelessWidget {
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('$companyName', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
+                          pw.Text(companyName, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
                           pw.Text('TPIN: $tpin', style: pw.TextStyle(fontSize: 10)),
                         ],
                       ),
@@ -155,19 +155,19 @@ class QuotationPdfPreview extends StatelessWidget {
                           pw.Row(
                             children: [
                               pw.Expanded(child: pw.Text('Quote No:', style: pw.TextStyle(fontSize: 10))),
-                              pw.Text('${quotation.quoteNumber}', style: pw.TextStyle(fontSize: 10)),
+                              pw.Text(quotation.quoteNumber, style: pw.TextStyle(fontSize: 10)),
                             ],
                           ),
                           pw.Row(
                             children: [
                               pw.Expanded(child: pw.Text('Date:', style: pw.TextStyle(fontSize: 10))),
-                              pw.Text('${quotation.date.toLocal().toString().split(' ')[0]}', style: pw.TextStyle(fontSize: 10)),
+                              pw.Text(quotation.date.toLocal().toString().split(' ')[0], style: pw.TextStyle(fontSize: 10)),
                             ],
                           ),
                           pw.Row(
                             children: [
                               pw.Expanded(child: pw.Text('Ref No:', style: pw.TextStyle(fontSize: 10))),
-                              pw.Text('${quotation.refNo}', style: pw.TextStyle(fontSize: 10)),
+                              pw.Text(quotation.refNo, style: pw.TextStyle(fontSize: 10)),
                             ],
                           ),
                         ],
@@ -212,13 +212,13 @@ class QuotationPdfPreview extends StatelessWidget {
                         pw.Row(
                           children: [
                             pw.Text('TOTAL AREA (sqm): ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
-                            pw.Text('${quotation.totalArea.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 10)),
+                            pw.Text(quotation.totalArea.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10)),
                           ],
                         ),
                         pw.Row(
                           children: [
                             pw.Text('TOTAL PRICE (K): ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13, color: PdfColors.purple800)),
-                            pw.Text('${quotation.totalPrice.toStringAsFixed(2)}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13, color: PdfColors.purple800)),
+                            pw.Text(quotation.totalPrice.toStringAsFixed(2), style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13, color: PdfColors.purple800)),
                           ],
                         ),
                       ],

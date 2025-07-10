@@ -3,7 +3,7 @@ import '../screens/quotation_item.dart';
 
 class ItemFormDialog extends StatefulWidget {
   final QuotationItem? quotationItem;
-  const ItemFormDialog({Key? key, this.quotationItem}) : super(key: key);
+  const ItemFormDialog({super.key, this.quotationItem});
 
   @override
   State<ItemFormDialog> createState() => _ItemFormDialogState();

@@ -5,7 +5,7 @@ import 'item_form_dialog.dart';
 
 class QuotationFormScreen extends StatefulWidget {
   final Quotation? existing;
-  const QuotationFormScreen({Key? key, this.existing}) : super(key: key);
+  const QuotationFormScreen({super.key, this.existing});
 
   @override
   State<QuotationFormScreen> createState() => _QuotationFormScreenState();
