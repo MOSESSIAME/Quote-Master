@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+/// The welcome/landing page for the QuoteMaster app.
+/// Shows app branding, a welcome message, and a "Get Started" button
+/// that navigates to the home screen.
 class WelcomePage extends StatelessWidget {
   const WelcomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Define primary and accent colors for the theme
     const primaryColor = Color(0xFF673AB7); // Deep Purple
     const accentColor = Color(0xFF9575CD);  // Lighter purple
 
@@ -13,7 +17,7 @@ class WelcomePage extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // Decorative circles
+            // Decorative circle at the top-left
             Positioned(
               top: -80,
               left: -80,
@@ -26,6 +30,7 @@ class WelcomePage extends StatelessWidget {
                 ),
               ),
             ),
+            // Decorative circle at the bottom-right
             Positioned(
               bottom: 60, // Leave space for footer
               right: -60,
@@ -38,6 +43,7 @@ class WelcomePage extends StatelessWidget {
                 ),
               ),
             ),
+            // Main vertical layout
             Column(
               children: [
                 Expanded(
@@ -47,7 +53,7 @@ class WelcomePage extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // App Icon
+                          // App Icon with shadow and circular background
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white24,
@@ -68,7 +74,7 @@ class WelcomePage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 36),
-                          // App Name (reduced size)
+                          // App Name
                           FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
@@ -90,7 +96,7 @@ class WelcomePage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          // Welcome Text
+                          // Welcome message
                           Text(
                             'Welcome to QuoteMaster!\nManage your quotations with ease, generate beautiful PDFs, and never lose your data.',
                             style: TextStyle(
@@ -101,11 +107,12 @@ class WelcomePage extends StatelessWidget {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 48),
-                          // Get Started Button
+                          // "Get Started" button
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
+                                // Navigate to home screen and replace this page
                                 Navigator.of(context).pushReplacementNamed('/home');
                               },
                               style: ElevatedButton.styleFrom(
@@ -130,7 +137,7 @@ class WelcomePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Footer
+                // Footer with copyright
                 Padding(
                   padding: const EdgeInsets.only(bottom: 18.0, top: 8),
                   child: Center(

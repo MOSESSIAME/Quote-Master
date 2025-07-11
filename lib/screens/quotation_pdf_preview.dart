@@ -7,8 +7,13 @@ import 'package:printing/printing.dart';
 import '../pdf/pdf_company_header.dart';
 import '../screens/quotation.dart';
 
+/// A screen to preview and print the PDF document for a quotation.
+/// Allows toggling the visibility of unit prices.
 class QuotationPdfPreview extends StatelessWidget {
+  /// The quotation to generate the PDF for.
   final Quotation quotation;
+
+  /// Whether to show the unit price column in the PDF.
   final bool showUnitPrice;
 
   const QuotationPdfPreview({
@@ -17,11 +22,15 @@ class QuotationPdfPreview extends StatelessWidget {
     this.showUnitPrice = true,
   }) : super(key: key);
 
+  /// Builds the PDF document as bytes.
   Future<Uint8List> _buildPdf(PdfPageFormat format) async {
     final doc = pw.Document();
+
+    // Load the company logo as bytes
     final logo = await rootBundle.load('assets/images/header.png');
     final logoBytes = logo.buffer.asUint8List();
 
+    // Company and banking details
     const companyName = 'WILHOETE LTD';
     const tpin = '1018233036';
     const bankName = 'UBA';
@@ -37,6 +46,7 @@ class QuotationPdfPreview extends StatelessWidget {
         pageFormat: format,
         margin: pw.EdgeInsets.all(16),
         build: (pw.Context context) {
+          // Table header for item details
           final tableHeaders = [
             pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('CODE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
             pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('DESCRIPTION', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
@@ -45,11 +55,14 @@ class QuotationPdfPreview extends StatelessWidget {
             pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('QTY', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
             pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('AREA (SQM)', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
           ];
+          // Optionally add UNIT PRICE column
           if (showUnitPrice) {
             tableHeaders.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('UNIT PRICE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))));
           }
+          // Always add NET PRICE column
           tableHeaders.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('NET PRICE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))));
 
+          // Specify column widths for the table
           final columnWidths = <int, pw.TableColumnWidth>{
             0: pw.FixedColumnWidth(40),
             1: pw.FlexColumnWidth(3),
@@ -64,6 +77,7 @@ class QuotationPdfPreview extends StatelessWidget {
           }
           columnWidths[col] = pw.FixedColumnWidth(72);
 
+          // Build all table rows (header + data)
           final tableRows = <pw.TableRow>[
             pw.TableRow(
               decoration: pw.BoxDecoration(color: PdfColors.grey300),
@@ -86,11 +100,13 @@ class QuotationPdfPreview extends StatelessWidget {
             }),
           ];
 
+          // Build the PDF page layout
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.stretch,
             children: [
               buildCompanyHeader(logoBytes),
               pw.SizedBox(height: 2),
+              // Title
               pw.Center(
                 child: pw.Text(
                   'QUOTATION',
@@ -102,9 +118,11 @@ class QuotationPdfPreview extends StatelessWidget {
                 ),
               ),
               pw.SizedBox(height: 8),
+              // Client and Company info
               pw.Row(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
+                  // Client info box
                   pw.Expanded(
                     flex: 3,
                     child: pw.Container(
@@ -125,6 +143,7 @@ class QuotationPdfPreview extends StatelessWidget {
                     ),
                   ),
                   pw.SizedBox(width: 6),
+                  // Company info box
                   pw.Expanded(
                     flex: 2,
                     child: pw.Container(
@@ -142,6 +161,7 @@ class QuotationPdfPreview extends StatelessWidget {
                     ),
                   ),
                   pw.SizedBox(width: 6),
+                  // Quotation info box
                   pw.Expanded(
                     flex: 2,
                     child: pw.Container(
@@ -177,15 +197,18 @@ class QuotationPdfPreview extends StatelessWidget {
                 ],
               ),
               pw.SizedBox(height: 10),
+              // Table with item details
               pw.Table(
                 border: pw.TableBorder.all(),
                 columnWidths: columnWidths,
                 children: tableRows,
               ),
               pw.SizedBox(height: 6),
+              // Terms and totals
               pw.Row(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
+                  // Terms and optional description
                   pw.Expanded(
                     flex: 3,
                     child: pw.Column(
@@ -195,11 +218,11 @@ class QuotationPdfPreview extends StatelessWidget {
                         pw.Text('Quotation Validity: 7 Days', style: pw.TextStyle(fontSize: 10)),
                         if (quotation.description != null && quotation.description!.isNotEmpty)
                           pw.Text(quotation.description!, style: pw.TextStyle(fontSize: 10)),
-                        // pw.Text('Supply and installation of Aluminium windows South Africa Standard profile', style: pw.TextStyle(fontSize: 10)),
                       ],
                     ),
                   ),
                   pw.SizedBox(width: 12),
+                  // Totals box
                   pw.Container(
                     padding: pw.EdgeInsets.all(6),
                     decoration: pw.BoxDecoration(
@@ -227,6 +250,7 @@ class QuotationPdfPreview extends StatelessWidget {
                 ],
               ),
               pw.SizedBox(height: 10),
+              // Banking details section
               pw.Container(
                 padding: pw.EdgeInsets.all(6),
                 decoration: pw.BoxDecoration(
@@ -262,6 +286,7 @@ class QuotationPdfPreview extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Quotation PDF Preview'),
         actions: [
+          // Button to toggle unit price column visibility
           IconButton(
             icon: Icon(showUnitPrice ? Icons.visibility : Icons.visibility_off),
             tooltip: showUnitPrice ? 'Hide Unit Price' : 'Show Unit Price',
@@ -279,6 +304,7 @@ class QuotationPdfPreview extends StatelessWidget {
           ),
         ],
       ),
+      // PDF preview body
       body: PdfPreview(
         build: _buildPdf,
         canChangePageFormat: false,

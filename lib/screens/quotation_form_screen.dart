@@ -3,7 +3,10 @@ import '../screens/quotation.dart';
 import '../screens/quotation_item.dart';
 import 'item_form_dialog.dart';
 
+/// A form screen for creating or editing a Quotation.
+/// Handles client info, quote details, items, and terms.
 class QuotationFormScreen extends StatefulWidget {
+  /// If editing, pass the existing Quotation to pre-fill the form.
   final Quotation? existing;
   const QuotationFormScreen({Key? key, this.existing}) : super(key: key);
 
@@ -14,7 +17,7 @@ class QuotationFormScreen extends StatefulWidget {
 class _QuotationFormScreenState extends State<QuotationFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers for client and quote fields
+  // Controllers for client details and quotation fields.
   final _clientNameController = TextEditingController();
   final _clientAddressController = TextEditingController();
   final _clientCellController = TextEditingController();
@@ -24,16 +27,19 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
   final _refNoController = TextEditingController();
   DateTime _quoteDate = DateTime.now();
 
+  // Quotation items and terms.
   List<QuotationItem> _items = [];
   String _terms =
       'Terms of payment: 70% Deposit 30% upon completion.\nQuotation Validity 7 Days';
 
+  // Calculated totals (area and price).
   double get _totalArea => _items.fold(0, (sum, item) => sum + item.area);
   double get _totalPrice => _items.fold(0, (sum, item) => sum + item.netPrice);
 
   @override
   void initState() {
     super.initState();
+    // If editing, pre-fill all controllers and fields with existing data.
     if (widget.existing != null) {
       final q = widget.existing!;
       _clientNameController.text = q.clientName;
@@ -49,18 +55,21 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
     }
   }
 
+  /// Add a new item to the quotation.
   void _addItem(QuotationItem item) {
     setState(() {
       _items.add(item);
     });
   }
 
+  /// Remove an item from the quotation.
   void _removeItem(int index) {
     setState(() {
       _items.removeAt(index);
     });
   }
 
+  /// Pick a date for the quotation using a date picker dialog.
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -75,6 +84,7 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
     }
   }
 
+  /// Validate and save the quotation. Pop the result to the previous screen.
   void _onSave() {
     if (_formKey.currentState!.validate() && _items.isNotEmpty) {
       final quotation = Quotation(
@@ -97,6 +107,7 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
 
   @override
   void dispose() {
+    // Dispose all controllers to free up resources.
     _clientNameController.dispose();
     _clientAddressController.dispose();
     _clientCellController.dispose();
@@ -118,6 +129,7 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // --- Client Details Section ---
             const Text("Client Details", style: TextStyle(fontWeight: FontWeight.bold)),
             TextFormField(
               controller: _clientNameController,
@@ -141,9 +153,12 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
               decoration: const InputDecoration(labelText: "ATTN"),
             ),
             const SizedBox(height: 16),
+
+            // --- Quotation Details Section ---
             const Text("Quotation Details", style: TextStyle(fontWeight: FontWeight.bold)),
             Row(
               children: [
+                // Quote number
                 Expanded(
                   child: TextFormField(
                     controller: _quoteNumberController,
@@ -152,6 +167,7 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
                   ),
                 ),
                 const SizedBox(width: 16),
+                // Date picker widget
                 Expanded(
                   child: InkWell(
                     onTap: _pickDate,
@@ -170,6 +186,8 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
               decoration: const InputDecoration(labelText: "Ref No."),
             ),
             const SizedBox(height: 16),
+
+            // --- Items Section ---
             const Text("Items", style: TextStyle(fontWeight: FontWeight.bold)),
             ListView.builder(
               shrinkWrap: true,
@@ -192,6 +210,7 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
               },
             ),
             const SizedBox(height: 8),
+            // Button to add a new item
             ElevatedButton.icon(
               icon: const Icon(Icons.add),
               label: const Text("Add Item"),
@@ -206,6 +225,8 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
               },
             ),
             const SizedBox(height: 16),
+
+            // --- Terms Field ---
             TextFormField(
               initialValue: _terms,
               maxLines: 3,
@@ -213,9 +234,13 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
               onChanged: (val) => _terms = val,
             ),
             const SizedBox(height: 16),
+
+            // --- Totals Section ---
             Text("Total Area: ${_totalArea.toStringAsFixed(2)} sqm", style: const TextStyle(fontWeight: FontWeight.bold)),
             Text("TOTAL PRICE (K): ${_totalPrice.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.purple)),
             const SizedBox(height: 24),
+
+            // --- Save Button ---
             ElevatedButton(
               onPressed: _onSave,
               child: Text(widget.existing != null ? "Update Quotation" : "Save Quotation"),

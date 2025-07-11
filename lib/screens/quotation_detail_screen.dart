@@ -4,6 +4,8 @@ import 'quotation_form_screen.dart';
 import 'item_form_dialog.dart';
 import 'quotation_pdf_preview.dart';
 
+/// Displays the details of a single quotation, allows editing, 
+/// deleting, item editing, and PDF preview.
 class QuotationDetailScreen extends StatefulWidget {
   final Quotation quotation;
   final VoidCallback onDelete;
@@ -26,9 +28,12 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize with the passed quotation
     quotation = widget.quotation;
   }
 
+  /// Trigger edit of the entire quotation. 
+  /// Opens the form, updates state and notifies parent if changed.
   Future<void> _editQuotation(BuildContext context) async {
     final updated = await Navigator.push<Quotation>(
       context,
@@ -40,11 +45,13 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
       setState(() {
         quotation = updated;
       });
-      widget.onEdit(updated);
-      Navigator.pop(context);
+      widget.onEdit(updated); // Notify parent about the edit
+      Navigator.pop(context); // Go back after edit
     }
   }
 
+  /// Trigger edit of a single item in the quotation.
+  /// Opens dialog, updates item list and totals, and notifies parent.
   Future<void> _editItem(BuildContext context, int index) async {
     final updatedItem = await showDialog(
       context: context,
@@ -55,6 +62,7 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
     if (updatedItem != null) {
       final updatedItems = List.of(quotation.items);
       updatedItems[index] = updatedItem;
+      // Recalculate totals for area and price
       final updatedQuotation = Quotation(
         clientName: quotation.clientName,
         clientAddress: quotation.clientAddress,
@@ -73,10 +81,11 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
       setState(() {
         quotation = updatedQuotation;
       });
-      widget.onEdit(updatedQuotation);
+      widget.onEdit(updatedQuotation); // Notify parent about the edit
     }
   }
 
+  /// Show confirmation dialog before deleting the quotation.
   Future<void> _confirmDelete(BuildContext context) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -97,11 +106,12 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
       ),
     );
     if (confirm == true) {
-      widget.onDelete();
-      Navigator.pop(context);
+      widget.onDelete(); // Notify parent about the deletion
+      Navigator.pop(context); // Go back after deletion
     }
   }
 
+  /// Preview the quotation as a PDF.
   void _previewPdf(BuildContext context) {
     Navigator.push(
       context,
@@ -139,16 +149,19 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Client Details
             Text("Client: ${quotation.clientName}", style: const TextStyle(fontWeight: FontWeight.bold)),
             Text("Address: ${quotation.clientAddress}"),
             Text("Cell: ${quotation.clientCell}"),
             Text("Email: ${quotation.clientEmail}"),
             Text("ATTN: ${quotation.attn}"),
             const SizedBox(height: 16),
+            // Quotation Details
             Text("Quote No: ${quotation.quoteNumber}"),
             Text("Date: ${quotation.date.toLocal().toString().split(' ')[0]}"),
             Text("Ref No: ${quotation.refNo}"),
             const SizedBox(height: 16),
+            // Items List
             const Text("Items:", style: TextStyle(fontWeight: FontWeight.bold)),
             ...List.generate(quotation.items.length, (index) {
               final item = quotation.items[index];
@@ -168,9 +181,11 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
               );
             }),
             const SizedBox(height: 16),
+            // Totals
             Text("Total Area: ${quotation.totalArea.toStringAsFixed(2)} sqm", style: const TextStyle(fontWeight: FontWeight.bold)),
             Text("TOTAL PRICE (K): ${quotation.totalPrice.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.purple)),
             const SizedBox(height: 16),
+            // Terms section
             const Text("Terms", style: TextStyle(fontWeight: FontWeight.bold)),
             Text(quotation.terms),
           ],
