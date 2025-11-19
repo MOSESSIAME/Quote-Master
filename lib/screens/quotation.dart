@@ -32,36 +32,38 @@ class Quotation {
   });
 
   factory Quotation.fromJson(Map<String, dynamic> json) => Quotation(
-        clientName: json['clientName'],
-        clientAddress: json['clientAddress'],
-        clientCell: json['clientCell'],
-        clientEmail: json['clientEmail'],
-        attn: json['attn'],
-        quoteNumber: json['quoteNumber'],
-        date: DateTime.parse(json['date']),
-        refNo: json['refNo'],
-        items: (json['items'] as List)
-            .map((e) => QuotationItem.fromJson(e))
-            .toList(),
-        terms: json['terms'],
-        totalArea: (json['totalArea'] as num).toDouble(),
-        totalPrice: (json['totalPrice'] as num).toDouble(),
-        description: json['description'],
-      );
+    clientName: json['clientName'],
+    clientAddress: json['clientAddress'],
+    clientCell: json['clientCell'],
+    clientEmail: json['clientEmail'],
+    attn: json['attn'],
+    quoteNumber: json['quoteNumber'],
+    date: DateTime.parse(json['date']),
+    refNo: json['refNo'],
+    items: (json['items'] as List)
+        .map((e) => QuotationItem.fromJson(e))
+        .toList(),
+    terms: json[''],
+    totalArea: (json['totalArea'] as num).toDouble(),
+    totalPrice: (json['totalPrice'] as num).toDouble(),
+    description: json['description'],
+  );
+
+  Object? get id => null;
 
   Map<String, dynamic> toJson() => {
-        'clientName': clientName,
-        'clientAddress': clientAddress,
-        'clientCell': clientCell,
-        'clientEmail': clientEmail,
-        'attn': attn,
-        'quoteNumber': quoteNumber,
-        'date': date.toIso8601String(),
-        'refNo': refNo,
-        'items': items.map((e) => e.toJson()).toList(),
-        'terms': terms,
-        'totalArea': totalArea,
-        'totalPrice': totalPrice,
-        'description': description,
-      };
+    'clientName': clientName,
+    'clientAddress': clientAddress,
+    'clientCell': clientCell,
+    'clientEmail': clientEmail,
+    'attn': attn,
+    'quoteNumber': quoteNumber,
+    'date': date.toIso8601String(),
+    'refNo': refNo,
+    'items': items.map((e) => e.toJson()).toList(),
+    'terms': terms,
+    'totalArea': totalArea,
+    'totalPrice': totalPrice,
+    'description': description,
+  };
 }

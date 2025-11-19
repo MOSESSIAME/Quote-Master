@@ -26,6 +26,9 @@ dependencies:
   share_plus: ^7.2.1
   shared_preferences: ^2.2.2
 
+  # 👉 Added for date formatting used in search
+  intl: ^0.19.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

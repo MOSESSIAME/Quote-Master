@@ -6,7 +6,7 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF673AB7); // Deep Purple
-    const accentColor = Color(0xFF9575CD);  // Lighter purple
+    const accentColor = Color(0xFF9575CD); // Lighter purple
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -27,7 +27,7 @@ class WelcomePage extends StatelessWidget {
               ),
             ),
             Positioned(
-              bottom: 60, // Leave space for footer
+              bottom: 60, // Leaving space for footer
               right: -60,
               child: Container(
                 width: 140,
@@ -57,7 +57,7 @@ class WelcomePage extends StatelessWidget {
                                   color: Colors.black26,
                                   blurRadius: 12,
                                   offset: Offset(0, 4),
-                                )
+                                ),
                               ],
                             ),
                             padding: const EdgeInsets.all(36),
@@ -83,20 +83,20 @@ class WelcomePage extends StatelessWidget {
                                     color: Colors.black26,
                                     blurRadius: 8,
                                     offset: Offset(2, 2),
-                                  )
+                                  ),
                                 ],
                               ),
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
                           // Welcome Text
                           Text(
                             'Welcome to QuoteMaster!\nManage your quotations with ease, generate beautiful PDFs, and never lose your data.',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 12,
                               color: Colors.white70,
-                              height: 1.4,
+                              height: 1.1,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -106,10 +106,14 @@ class WelcomePage extends StatelessWidget {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.of(context).pushReplacementNamed('/home');
+                                Navigator.of(
+                                  context,
+                                ).pushReplacementNamed('/home');
                               },
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 backgroundColor: Colors.white,
                                 foregroundColor: primaryColor,
                                 shape: RoundedRectangleBorder(
@@ -117,7 +121,7 @@ class WelcomePage extends StatelessWidget {
                                 ),
                                 textStyle: const TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 20,
+                                  fontSize: 14,
                                   letterSpacing: 1.5,
                                 ),
                                 elevation: 6,
@@ -135,17 +139,17 @@ class WelcomePage extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 18.0, top: 8),
                   child: Center(
                     child: Text(
-                      'Copyright© Moses Siame 2025',
+                      'Copyright© Quote Master 2025',
                       style: TextStyle(
                         color: Colors.white54,
-                        fontSize: 14,
+                        fontSize: 11,
                         letterSpacing: 1.1,
                       ),
                     ),
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),

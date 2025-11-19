@@ -35,16 +35,32 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
   @override
   void initState() {
     super.initState();
-    _codeController = TextEditingController(text: widget.quotationItem?.code ?? '');
-    _descriptionController = TextEditingController(text: widget.quotationItem?.description ?? '');
+    _codeController = TextEditingController(
+      text: widget.quotationItem?.code ?? '',
+    );
+    _descriptionController = TextEditingController(
+      text: widget.quotationItem?.description ?? '',
+    );
     _widthController = TextEditingController(
-        text: widget.quotationItem != null ? widget.quotationItem!.width.toString() : '');
+      text: widget.quotationItem != null
+          ? widget.quotationItem!.width.toString()
+          : '',
+    );
     _heightController = TextEditingController(
-        text: widget.quotationItem != null ? widget.quotationItem!.height.toString() : '');
+      text: widget.quotationItem != null
+          ? widget.quotationItem!.height.toString()
+          : '',
+    );
     _qtyController = TextEditingController(
-        text: widget.quotationItem != null ? widget.quotationItem!.quantity.toString() : '');
+      text: widget.quotationItem != null
+          ? widget.quotationItem!.quantity.toString()
+          : '',
+    );
     _unitPriceController = TextEditingController(
-        text: widget.quotationItem != null ? widget.quotationItem!.unitPrice.toString() : '');
+      text: widget.quotationItem != null
+          ? widget.quotationItem!.unitPrice.toString()
+          : '',
+    );
 
     if (widget.quotationItem != null) {
       final width = widget.quotationItem!.width;
@@ -108,12 +124,14 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
               TextFormField(
                 controller: _codeController,
                 decoration: const InputDecoration(labelText: 'Code'),
-                validator: (val) => val == null || val.isEmpty ? 'Enter code' : null,
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Enter code' : null,
               ),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
-                validator: (val) => val == null || val.isEmpty ? 'Enter description' : null,
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Enter description' : null,
               ),
               Row(
                 children: [
@@ -121,8 +139,12 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
                     child: TextFormField(
                       controller: _widthController,
                       decoration: const InputDecoration(labelText: 'Width'),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      validator: (val) => (double.tryParse(val ?? '') ?? 0) > 0 ? null : 'Enter width',
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: (val) => (double.tryParse(val ?? '') ?? 0) > 0
+                          ? null
+                          : 'Enter width',
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -130,8 +152,12 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
                     child: TextFormField(
                       controller: _heightController,
                       decoration: const InputDecoration(labelText: 'Height'),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      validator: (val) => (double.tryParse(val ?? '') ?? 0) > 0 ? null : 'Enter height',
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: (val) => (double.tryParse(val ?? '') ?? 0) > 0
+                          ? null
+                          : 'Enter height',
                     ),
                   ),
                 ],
@@ -140,13 +166,19 @@ class _ItemFormDialogState extends State<ItemFormDialog> {
                 controller: _qtyController,
                 decoration: const InputDecoration(labelText: 'Quantity'),
                 keyboardType: TextInputType.number,
-                validator: (val) => (int.tryParse(val ?? '') ?? 0) > 0 ? null : 'Enter quantity',
+                validator: (val) => (int.tryParse(val ?? '') ?? 0) > 0
+                    ? null
+                    : 'Enter quantity',
               ),
               TextFormField(
                 controller: _unitPriceController,
                 decoration: const InputDecoration(labelText: 'Unit Price (K)'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (val) => (double.tryParse(val ?? '') ?? 0) > 0 ? null : 'Enter unit price',
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                validator: (val) => (double.tryParse(val ?? '') ?? 0) > 0
+                    ? null
+                    : 'Enter unit price',
               ),
               const SizedBox(height: 8),
               Align(
