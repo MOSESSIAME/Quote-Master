@@ -1,51 +1,65 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// ignore: depend_on_referenced_packages
 import 'quotation.dart';
 import 'quotation_form_screen.dart';
 import 'quotation_detail_screen.dart';
 
-/// The HomeScreen widget displays a list of quotations and allows
-/// the user to add, edit, or delete quotations.
+/// HomeScreen with a clearer dotted pattern background (improved visibility).
+/// Logic (load/save/edit/delete/search) remains unchanged.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // List to hold all quotation objects
   List<Quotation> quotations = [];
+  List<Quotation> filteredQuotations = [];
+  final TextEditingController _searchController = TextEditingController();
+  late final VoidCallback _onSearchChanged;
 
   @override
   void initState() {
     super.initState();
-    _loadQuotations(); // Load saved quotations when the screen initializes
+    _onSearchChanged = () => _filterQuotations(_searchController.text);
+    _searchController.addListener(_onSearchChanged);
+    _loadQuotations();
   }
 
-  /// Loads quotations from local storage using SharedPreferences.
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadQuotations() async {
     final prefs = await SharedPreferences.getInstance();
     final data = prefs.getString('quotations');
     if (data != null) {
-      // Decode the JSON string into a list of quotations
       final decoded = jsonDecode(data) as List;
       setState(() {
         quotations = decoded.map((e) => Quotation.fromJson(e)).toList();
+        filteredQuotations = List.from(quotations);
+      });
+    } else {
+      setState(() {
+        quotations = [];
+        filteredQuotations = [];
       });
     }
   }
 
-  /// Saves the current quotations list to local storage.
   Future<void> _saveQuotations() async {
     final prefs = await SharedPreferences.getInstance();
-    // Convert the quotations list to a JSON string and save it
     final data = jsonEncode(quotations.map((e) => e.toJson()).toList());
     await prefs.setString('quotations', data);
+    _filterQuotations(_searchController.text);
   }
 
-  /// Adds a new quotation to the list and saves it.
   void _addQuotation(Quotation quotation) {
     setState(() {
       quotations.add(quotation);
@@ -53,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _saveQuotations();
   }
 
-  /// Edits an existing quotation at the given index and saves.
   void _editQuotation(int index, Quotation quotation) {
     setState(() {
       quotations[index] = quotation;
@@ -61,7 +74,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _saveQuotations();
   }
 
-  /// Deletes the quotation at the given index and saves.
   void _deleteQuotation(int index) {
     setState(() {
       quotations.removeAt(index);
@@ -69,55 +81,91 @@ class _HomeScreenState extends State<HomeScreen> {
     _saveQuotations();
   }
 
+  int _findOriginalIndex(Quotation q) {
+    final byIdentity = quotations.indexOf(q);
+    if (byIdentity != -1) return byIdentity;
+
+    final idx = quotations.indexWhere((element) {
+      final sameName =
+          (element.clientName ?? '').toString() ==
+          (q.clientName ?? '').toString();
+      final sameNumber =
+          (element.quoteNumber ?? '').toString() ==
+          (q.quoteNumber ?? '').toString();
+      final sameDate =
+          (element.date ?? '').toString() == (q.date ?? '').toString();
+      return (sameNumber && sameName) ||
+          (sameName && sameDate) ||
+          (sameNumber && sameDate);
+    });
+    return idx;
+  }
+
+  void _filterQuotations(String query) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) {
+      setState(() {
+        filteredQuotations = List.from(quotations);
+      });
+      return;
+    }
+
+    String formatDateCandidate(dynamic dateValue) {
+      if (dateValue == null) return '';
+      if (dateValue is DateTime) {
+        return DateFormat('yyyy-MM-dd').format(dateValue) +
+            '|' +
+            DateFormat('dd/MM/yyyy').format(dateValue);
+      }
+      if (dateValue is String) {
+        try {
+          final parsed = DateTime.parse(dateValue);
+          return DateFormat('yyyy-MM-dd').format(parsed) +
+              '|' +
+              DateFormat('dd/MM/yyyy').format(parsed) +
+              '|' +
+              dateValue;
+        } catch (_) {
+          return dateValue;
+        }
+      }
+      return dateValue.toString();
+    }
+
+    setState(() {
+      filteredQuotations = quotations.where((quotation) {
+        final name = (quotation.clientName ?? '').toString().toLowerCase();
+        final number = (quotation.quoteNumber ?? '').toString().toLowerCase();
+        final dateString = formatDateCandidate(quotation.date).toLowerCase();
+
+        final matchesName = name.contains(q);
+        final matchesNumber = number.contains(q);
+        final matchesDate = dateString.contains(q);
+
+        return matchesName || matchesNumber || matchesDate;
+      }).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final listToShow = filteredQuotations;
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Quotations')),
-      body: quotations.isEmpty
-          // Show a message when there are no quotations
-          ? Center(
-              child: Text(
-                "There are no quotations yet.\nClick + to create one.",
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey.shade600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            )
-          // Show the list of quotations
-          : ListView.builder(
-              itemCount: quotations.length,
-              itemBuilder: (context, index) {
-                final q = quotations[index];
-                return ListTile(
-                  title: Text(q.clientName),
-                  subtitle: Text('Quote#: ${q.quoteNumber}'),
-                  // Open the quotation detail screen on tap
-                  onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => QuotationDetailScreen(
-                          quotation: q,
-                          onDelete: () {
-                            _deleteQuotation(index);
-                          },
-                          onEdit: (newQ) {
-                            _editQuotation(index, newQ);
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-      // Floating button to add a new quotation
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text('Quotations'),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        centerTitle: false,
+        automaticallyImplyLeading: false,
+        foregroundColor: Colors.black87,
+      ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF7C4DFF),
         child: const Icon(Icons.add),
         onPressed: () async {
-          // Open the form to create a new quotation and add if result is not null
           final newQ = await Navigator.push<Quotation>(
             context,
             MaterialPageRoute(builder: (_) => QuotationFormScreen()),
@@ -127,6 +175,376 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
       ),
+      body: Stack(
+        children: [
+          // Dotted pattern background painter
+          const Positioned.fill(
+            child: CustomPaint(painter: _DottedBackgroundPainter()),
+          ),
+
+          // Reduced-strength translucent gradient overlay so pattern shows through
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: const Alignment(-0.9, -1),
+                  end: const Alignment(1, 1),
+                  colors: [
+                    // Using fromRGBO to allow opacity and non-const
+                    Color.fromRGBO(
+                      246,
+                      241,
+                      255,
+                      0.72,
+                    ), // light purple tint with transparency
+                    Color.fromRGBO(
+                      255,
+                      255,
+                      255,
+                      0.95,
+                    ), // near-white but slightly transparent
+                  ],
+                  stops: const [0, 1],
+                ),
+              ),
+            ),
+          ),
+
+          // Main content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+              child: Column(
+                children: [
+                  // Search card
+                  Material(
+                    elevation: 4,
+                    shadowColor: Colors.black26,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: Row(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(right: 8.0),
+                            child: Icon(
+                              Icons.search,
+                              size: 22,
+                              color: Color(0xFF6D4CFF),
+                            ),
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText:
+                                    'Search by name, quote number or date (e.g. 2025-11-16 or 16/11/2025)',
+                                hintStyle: TextStyle(
+                                  color: Colors.grey.shade500,
+                                  fontSize: 14,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                              ),
+                              textInputAction: TextInputAction.search,
+                              onSubmitted: (value) => _filterQuotations(value),
+                            ),
+                          ),
+                          if (_searchController.text.isNotEmpty)
+                            GestureDetector(
+                              onTap: () {
+                                _searchController.clear();
+                                _filterQuotations('');
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  size: 18,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // List or empty states in a soft card container
+                  Expanded(
+                    child: quotations.isEmpty
+                        ? Center(
+                            child: Text(
+                              "There are no quotations yet.\nClick + to create one.",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey.shade700,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        : listToShow.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No results for "${_searchController.text}".',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          )
+                        : ListView.separated(
+                            itemCount: listToShow.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final q = listToShow[index];
+
+                              // compute date display safely
+                              String dateDisplay = '';
+                              try {
+                                if (q.date != null) {
+                                  if (q.date is DateTime) {
+                                    dateDisplay = DateFormat(
+                                      'yyyy-MM-dd',
+                                    ).format(q.date);
+                                  } else {
+                                    final parsed = DateTime.tryParse(
+                                      q.date.toString(),
+                                    );
+                                    dateDisplay = parsed != null
+                                        ? DateFormat(
+                                            'yyyy-MM-dd',
+                                          ).format(parsed)
+                                        : q.date.toString();
+                                  }
+                                }
+                              } catch (_) {
+                                dateDisplay = q.date?.toString() ?? '';
+                              }
+
+                              return Material(
+                                elevation: 2,
+                                shadowColor: Colors.black12,
+                                borderRadius: BorderRadius.circular(12),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () async {
+                                    final originalIndex = _findOriginalIndex(q);
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => QuotationDetailScreen(
+                                          quotation: q,
+                                          onDelete: () {
+                                            if (originalIndex != -1)
+                                              _deleteQuotation(originalIndex);
+                                          },
+                                          onEdit: (newQ) {
+                                            if (originalIndex != -1)
+                                              _editQuotation(
+                                                originalIndex,
+                                                newQ,
+                                              );
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // avatar / icon
+                                        Container(
+                                          width: 44,
+                                          height: 44,
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color(0xFF9A7BFF),
+                                                Color(0xFF7C4DFF),
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(
+                                                  0.08,
+                                                ),
+                                                offset: const Offset(0, 3),
+                                                blurRadius: 6,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              (q.clientName ?? '').isNotEmpty
+                                                  ? (q.clientName![0]
+                                                        .toUpperCase())
+                                                  : '?',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        // main text
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                q.clientName ?? '',
+                                                style: theme
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    'Quote#: ${q.quoteNumber ?? ''}',
+                                                    style: theme
+                                                        .textTheme
+                                                        .bodyMedium
+                                                        ?.copyWith(
+                                                          color: Colors
+                                                              .grey
+                                                              .shade700,
+                                                        ),
+                                                  ),
+                                                  if (dateDisplay
+                                                      .isNotEmpty) ...[
+                                                    const SizedBox(width: 10),
+                                                    Text(
+                                                      '•',
+                                                      style: TextStyle(
+                                                        color: Colors
+                                                            .grey
+                                                            .shade400,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      dateDisplay,
+                                                      style: theme
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.copyWith(
+                                                            color: Colors
+                                                                .grey
+                                                                .shade600,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        // chevron
+                                        const Icon(
+                                          Icons.chevron_right,
+                                          color: Colors.black38,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+
+  DateFormat(String s) {}
+}
+
+/// Custom painter that draws a clearer dotted grid pattern.
+/// Spacing/dotSize adapt to the canvas size so pattern looks good on phones and desktops.
+class _DottedBackgroundPainter extends CustomPainter {
+  const _DottedBackgroundPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    // Dot color: slightly stronger purple/grey with higher opacity
+    paint.color = const Color(0xFF9E8CFF).withOpacity(0.10);
+
+    // Determine spacing and dot size based on shortest side to keep pattern proportional
+    final shortest = size.shortestSide;
+    // spacing: denser dots than before (smaller numbers), but still clamped
+    final spacing = (shortest / 18).clamp(14.0, 32.0);
+    final dotSize = (shortest / 380).clamp(1.4, 4.0); // radius
+
+    // draw dots in a grid
+    for (double y = 0; y < size.height + spacing; y += spacing) {
+      // Offset every other row for a subtle pattern
+      final rowOffset = ((y / spacing) % 2 == 0) ? 0.0 : spacing / 2;
+      for (double x = -spacing; x < size.width + spacing; x += spacing) {
+        final dx = x + rowOffset;
+        canvas.drawCircle(Offset(dx, y), dotSize, paint);
+      }
+    }
+
+    // Decorative faint circles in corners for depth with slightly stronger opacity
+    final cornerPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFF7C4DFF).withOpacity(0.035);
+    canvas.drawCircle(
+      Offset(size.width * 0.06, size.height * 0.08),
+      shortest * 0.09,
+      cornerPaint,
+    );
+    canvas.drawCircle(
+      Offset(size.width * 0.92, size.height * 0.92),
+      shortest * 0.07,
+      cornerPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
