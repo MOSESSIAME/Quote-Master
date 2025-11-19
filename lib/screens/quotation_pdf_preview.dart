@@ -7,13 +7,8 @@ import 'package:printing/printing.dart';
 import '../pdf/pdf_company_header.dart';
 import '../screens/quotation.dart';
 
-/// A screen to preview, name, and print/share the PDF document for a quotation.
-/// Default PDF filename uses the client name, but can be edited before exporting.
 class QuotationPdfPreview extends StatefulWidget {
-  /// The quotation to generate the PDF for.
   final Quotation quotation;
-
-  /// Whether to show the unit price column in the PDF.
   final bool showUnitPrice;
 
   const QuotationPdfPreview({
@@ -32,7 +27,6 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
   @override
   void initState() {
     super.initState();
-    // Default file name based on client name (spaces replaced), fallback to quote number if empty.
     String defaultName = widget.quotation.clientName.trim().isNotEmpty
         ? '${widget.quotation.clientName.replaceAll(RegExp(r"[^\w]+"), "_")}_quotation.pdf'
         : 'Quote_${widget.quotation.quoteNumber}.pdf';
@@ -45,47 +39,113 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
     super.dispose();
   }
 
-  /// Builds the PDF document as bytes.
   Future<Uint8List> _buildPdf(PdfPageFormat format) async {
     final doc = pw.Document();
 
-    // Load the company logo as bytes
     final logo = await rootBundle.load('assets/images/header.png');
     final logoBytes = logo.buffer.asUint8List();
 
-    // Company and banking details
     const companyName = 'WILHOETE LTD';
     const tpin = '1018233036';
-    const bankName = 'UBA';
-    const bankAccountName = 'WILHOETE LIMITED';
-    const bankAccountNo = '9030160 010969';
-    const bankBranch = 'CAIRO ROAD';
-    const bankCode = '370000';
-    const sortCode = '370003';
-    const swiftCode = 'UNAFMLU';
 
+    // -- page 1 --
     doc.addPage(
       pw.Page(
         pageFormat: format,
         margin: pw.EdgeInsets.all(16),
         build: (pw.Context context) {
-          // Table header for item details
+          // table headers
           final tableHeaders = [
-            pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('CODE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
-            pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('DESCRIPTION', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
-            pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('WIDTH', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
-            pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('HEIGHT', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
-            pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('QTY', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
-            pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('AREA (SQM)', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))),
+            pw.Padding(
+              padding: pw.EdgeInsets.all(2),
+              child: pw.Text(
+                'CODE',
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 9,
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: pw.EdgeInsets.all(2),
+              child: pw.Text(
+                'DESCRIPTION',
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 9,
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: pw.EdgeInsets.all(2),
+              child: pw.Text(
+                'WIDTH',
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 9,
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: pw.EdgeInsets.all(2),
+              child: pw.Text(
+                'HEIGHT',
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 9,
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: pw.EdgeInsets.all(2),
+              child: pw.Text(
+                'QTY',
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 9,
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: pw.EdgeInsets.all(2),
+              child: pw.Text(
+                'AREA (SQM)',
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 9,
+                ),
+              ),
+            ),
           ];
-          // Optionally add UNIT PRICE column
-          if (widget.showUnitPrice) {
-            tableHeaders.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('UNIT PRICE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))));
-          }
-          // Always add NET PRICE column
-          tableHeaders.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('NET PRICE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9))));
 
-          // Specify column widths for the table
+          if (widget.showUnitPrice) {
+            tableHeaders.add(
+              pw.Padding(
+                padding: pw.EdgeInsets.all(2),
+                child: pw.Text(
+                  'UNIT PRICE',
+                  style: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 9,
+                  ),
+                ),
+              ),
+            );
+          }
+
+          tableHeaders.add(
+            pw.Padding(
+              padding: pw.EdgeInsets.all(2),
+              child: pw.Text(
+                'NET PRICE',
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 9,
+                ),
+              ),
+            ),
+          );
+
           final columnWidths = <int, pw.TableColumnWidth>{
             0: pw.FixedColumnWidth(40),
             1: pw.FlexColumnWidth(3),
@@ -100,7 +160,6 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
           }
           columnWidths[col] = pw.FixedColumnWidth(72);
 
-          // Build all table rows (header + data)
           final tableRows = <pw.TableRow>[
             pw.TableRow(
               decoration: pw.BoxDecoration(color: PdfColors.grey300),
@@ -108,22 +167,82 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
             ),
             ...widget.quotation.items.map((item) {
               final row = [
-                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.code}', style: pw.TextStyle(fontSize: 9))),
-                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.description}', style: pw.TextStyle(fontSize: 9))),
-                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.width}', style: pw.TextStyle(fontSize: 9))),
-                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.height}', style: pw.TextStyle(fontSize: 9))),
-                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.quantity}', style: pw.TextStyle(fontSize: 9))),
-                pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.area.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9))),
+                pw.Padding(
+                  padding: pw.EdgeInsets.all(2),
+                  child: pw.Text(
+                    '${item.code}',
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+                pw.Padding(
+                  padding: pw.EdgeInsets.all(2),
+                  child: pw.Text(
+                    '${item.description}',
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+                pw.Padding(
+                  padding: pw.EdgeInsets.all(2),
+                  child: pw.Text(
+                    '${item.width}',
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+                pw.Padding(
+                  padding: pw.EdgeInsets.all(2),
+                  child: pw.Text(
+                    '${item.height}',
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+                pw.Padding(
+                  padding: pw.EdgeInsets.all(2),
+                  child: pw.Text(
+                    '${item.quantity}',
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+                pw.Padding(
+                  padding: pw.EdgeInsets.all(2),
+                  child: pw.Text(
+                    '${item.area.toStringAsFixed(2)}',
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
+                ),
               ];
               if (widget.showUnitPrice) {
-                row.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.unitPrice.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9))));
+                row.add(
+                  pw.Padding(
+                    padding: pw.EdgeInsets.all(2),
+                    child: pw.Text(
+                      '${item.unitPrice.toStringAsFixed(2)}',
+                      style: pw.TextStyle(fontSize: 9),
+                    ),
+                  ),
+                );
               }
-              row.add(pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text('${item.netPrice.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 9))));
+              row.add(
+                pw.Padding(
+                  padding: pw.EdgeInsets.all(2),
+                  child: pw.Text(
+                    '${item.netPrice.toStringAsFixed(2)}',
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+              );
               return pw.TableRow(children: row);
             }),
           ];
 
-          // Build the PDF page layout (same as before)
+          // slightly thinner but explicit solid borders to avoid dotted rendering
+          final solidTableBorder = pw.TableBorder.all(
+            width: 0.6,
+            color: PdfColors.grey600,
+          );
+
+          // explicit box border for small containers
+          final boxBorder = pw.Border.all(width: 0.6, color: PdfColors.grey600);
+
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.stretch,
             children: [
@@ -147,13 +266,14 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
                     flex: 3,
                     child: pw.Container(
                       padding: pw.EdgeInsets.all(6),
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(width: 1),
-                      ),
+                      decoration: pw.BoxDecoration(border: boxBorder),
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('CLIENT NAME: ${widget.quotation.clientName}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                          pw.Text(
+                            'CLIENT NAME: ${widget.quotation.clientName}',
+                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                          ),
                           pw.Text('Address: ${widget.quotation.clientAddress}'),
                           pw.Text('Cell No: ${widget.quotation.clientCell}'),
                           pw.Text('Email: ${widget.quotation.clientEmail}'),
@@ -167,14 +287,21 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
                     flex: 2,
                     child: pw.Container(
                       padding: pw.EdgeInsets.all(6),
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(width: 1),
-                      ),
+                      decoration: pw.BoxDecoration(border: boxBorder),
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('$companyName', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
-                          pw.Text('TPIN: $tpin', style: pw.TextStyle(fontSize: 10)),
+                          pw.Text(
+                            '$companyName',
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                          pw.Text(
+                            'TPIN: $tpin',
+                            style: pw.TextStyle(fontSize: 10),
+                          ),
                         ],
                       ),
                     ),
@@ -184,28 +311,50 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
                     flex: 2,
                     child: pw.Container(
                       padding: pw.EdgeInsets.all(6),
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(width: 1),
-                      ),
+                      decoration: pw.BoxDecoration(border: boxBorder),
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
                           pw.Row(
                             children: [
-                              pw.Expanded(child: pw.Text('Quote No:', style: pw.TextStyle(fontSize: 10))),
-                              pw.Text('${widget.quotation.quoteNumber}', style: pw.TextStyle(fontSize: 10)),
+                              pw.Expanded(
+                                child: pw.Text(
+                                  'Quote No:',
+                                  style: pw.TextStyle(fontSize: 10),
+                                ),
+                              ),
+                              pw.Text(
+                                '${widget.quotation.quoteNumber}',
+                                style: pw.TextStyle(fontSize: 10),
+                              ),
                             ],
                           ),
                           pw.Row(
                             children: [
-                              pw.Expanded(child: pw.Text('Date:', style: pw.TextStyle(fontSize: 10))),
-                              pw.Text('${widget.quotation.date.toLocal().toString().split(' ')[0]}', style: pw.TextStyle(fontSize: 10)),
+                              pw.Expanded(
+                                child: pw.Text(
+                                  'Date:',
+                                  style: pw.TextStyle(fontSize: 10),
+                                ),
+                              ),
+                              pw.Text(
+                                '${widget.quotation.date.toLocal().toString().split(' ')[0]}',
+                                style: pw.TextStyle(fontSize: 10),
+                              ),
                             ],
                           ),
                           pw.Row(
                             children: [
-                              pw.Expanded(child: pw.Text('Ref No:', style: pw.TextStyle(fontSize: 10))),
-                              pw.Text('${widget.quotation.refNo}', style: pw.TextStyle(fontSize: 10)),
+                              pw.Expanded(
+                                child: pw.Text(
+                                  'Ref No:',
+                                  style: pw.TextStyle(fontSize: 10),
+                                ),
+                              ),
+                              pw.Text(
+                                '${widget.quotation.refNo}',
+                                style: pw.TextStyle(fontSize: 10),
+                              ),
                             ],
                           ),
                         ],
@@ -216,31 +365,22 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
               ),
               pw.SizedBox(height: 10),
               pw.Table(
-                border: pw.TableBorder.all(),
+                border: solidTableBorder,
                 columnWidths: columnWidths,
                 children: tableRows,
               ),
               pw.SizedBox(height: 6),
+              // spacer (terms moved to page 2)
+              pw.SizedBox(height: 8),
               pw.Row(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Expanded(
-                    flex: 3,
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text('Terms and Conditions: ${widget.quotation.terms}', style: pw.TextStyle(fontSize: 10)),
-                        pw.Text('Quotation Validity: 7 Days', style: pw.TextStyle(fontSize: 10)),
-                        if (widget.quotation.description != null && widget.quotation.description!.isNotEmpty)
-                          pw.Text(widget.quotation.description!, style: pw.TextStyle(fontSize: 10)),
-                      ],
-                    ),
-                  ),
+                  pw.Expanded(flex: 3, child: pw.Container()),
                   pw.SizedBox(width: 12),
                   pw.Container(
                     padding: pw.EdgeInsets.all(6),
                     decoration: pw.BoxDecoration(
-                      border: pw.Border.all(width: 1),
+                      border: boxBorder,
                       color: PdfColors.purple100,
                     ),
                     child: pw.Column(
@@ -248,14 +388,37 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
                       children: [
                         pw.Row(
                           children: [
-                            pw.Text('TOTAL AREA (sqm): ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
-                            pw.Text('${widget.quotation.totalArea.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 10)),
+                            pw.Text(
+                              'TOTAL AREA (sqm): ',
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                            pw.Text(
+                              '${widget.quotation.totalArea.toStringAsFixed(2)}',
+                              style: pw.TextStyle(fontSize: 10),
+                            ),
                           ],
                         ),
                         pw.Row(
                           children: [
-                            pw.Text('TOTAL PRICE (K): ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13, color: PdfColors.purple800)),
-                            pw.Text('${widget.quotation.totalPrice.toStringAsFixed(2)}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13, color: PdfColors.purple800)),
+                            pw.Text(
+                              'TOTAL PRICE (K): ',
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                                fontSize: 13,
+                                color: PdfColors.purple800,
+                              ),
+                            ),
+                            pw.Text(
+                              '${widget.quotation.totalPrice.toStringAsFixed(2)}',
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                                fontSize: 13,
+                                color: PdfColors.purple800,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -267,25 +430,143 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
               pw.Container(
                 padding: pw.EdgeInsets.all(6),
                 decoration: pw.BoxDecoration(
-                  border: pw.Border.all(width: 1),
+                  border: boxBorder,
                   color: PdfColors.grey200,
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('BANKING DETAILS:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
-                    pw.Text('BANK NAME: $bankName', style: pw.TextStyle(fontSize: 10)),
-                    pw.Text('ACCOUNT NAME: $bankAccountName', style: pw.TextStyle(fontSize: 10)),
-                    pw.Text('ACCOUNT NO: $bankAccountNo', style: pw.TextStyle(fontSize: 10)),
-                    pw.Text('BRANCH: $bankBranch', style: pw.TextStyle(fontSize: 10)),
-                    pw.Text('BANK CODE: $bankCode', style: pw.TextStyle(fontSize: 10)),
-                    pw.Text('SORT CODE: $sortCode', style: pw.TextStyle(fontSize: 10)),
-                    pw.Text('SWIFT CODE: $swiftCode', style: pw.TextStyle(fontSize: 10)),
-                  ],
                 ),
               ),
             ],
           );
+        },
+      ),
+    );
+
+    // -- page 2: Terms & Conditions (reduced font, left aligned) --
+    doc.addPage(
+      pw.MultiPage(
+        pageFormat: format,
+        margin: pw.EdgeInsets.all(16),
+        build: (pw.Context context) {
+          final bodyStyle = pw.TextStyle(fontSize: 9.8, height: 1.14);
+          final headingStyle = pw.TextStyle(
+            fontSize: 11,
+            fontWeight: pw.FontWeight.bold,
+          );
+          final smallGap = pw.SizedBox(height: 6);
+          final mediumGap = pw.SizedBox(height: 10);
+
+          // helper to create left-aligned paragraphs
+          pw.Widget para(String text) => pw.Padding(
+            padding: pw.EdgeInsets.only(bottom: 6),
+            child: pw.Text(
+              text,
+              style: bodyStyle,
+              textAlign: pw.TextAlign.left,
+            ),
+          );
+
+          return <pw.Widget>[
+            pw.Center(
+              child: pw.Text(
+                'Terms & Conditions',
+                style: pw.TextStyle(
+                  fontSize: 13,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            mediumGap,
+            pw.Text(
+              'Payment Terms:',
+              style: headingStyle,
+              textAlign: pw.TextAlign.left,
+            ),
+            smallGap,
+            para(
+              'A 70% deposit, based on the full value of the Project, is required on placement of order. '
+              'The 30% balance of the project value is payable upon installation. Where installation of the product '
+              'is unable to take place because of delays on-site caused by any party other than Wilhoete Glass and Aluminium '
+              'by more than 30 days from the date of advice to the Client of completion of manufacture of the product, any balance '
+              'outstanding will become immediately payable, irrespective of such delays.',
+            ),
+            pw.SizedBox(height: 8),
+
+            pw.Text(
+              'Delivery Terms:',
+              style: headingStyle,
+              textAlign: pw.TextAlign.left,
+            ),
+            smallGap,
+            para(
+              'The manufacturing and commencement of Installation of ordered products will take_____Working Days (the "lead time" ) '
+              'where Standard Stock Colours and standard glass are used (Bronze, black, White or Natural). '
+              'Where Wilhoete glass and Aluminium measures existing spaces and manufactures to the size, Wilhoete glass Aluminium '
+              'will not be responsible for the cost associated with re sizing and re-installation of the product. '
+              'The quotation is based on the standard designs of windows and or doors.',
+            ),
+
+            pw.Text(
+              'Installation:',
+              style: headingStyle,
+              textAlign: pw.TextAlign.left,
+            ),
+            smallGap,
+            para(
+              'Installation period will be dependent on the size of the Job, number of Components requiring installation, '
+              'and the state of readiness of the actual Apertures. Phasing of any project will be subject to additional costs and payment terms. '
+              'Practical completion is when a project is \'practically complete\', in the sense of the works being capable of being used '
+              'or having been installed, as distinct from when they are finished (with all defects rectified).',
+            ),
+
+            pw.Text(
+              'Defects & Punch / Snag List post Practical Completion of Installation:',
+              style: headingStyle,
+              textAlign: pw.TextAlign.left,
+            ),
+            smallGap,
+            para(
+              'The Client shall within 7 Days after Final Servicing of all Products, furnish Willhoete glass and Aluminium with a final written '
+              'snag / punch list of defects occasioned by defective workmanship and/or faulty materials. Wilhoete Aluminium shall remedy the defects '
+              'identified in the snag / punch list, (unless such defects are not occasioned by defective workmanship and/or faulty materials) within '
+              '14 Working Days after the delivery of the snag / punch list to Wilhoete Aluminium, and thereafter consider the project and installation to be finalised complete.',
+            ),
+
+            pw.Text(
+              'Exclusions:',
+              style: headingStyle,
+              textAlign: pw.TextAlign.left,
+            ),
+            smallGap,
+            para(
+              'This quotation excludes all or any Building, Plastering and/or Masonry work. The removal of protective tapes and plastic wrapping is done by the Contractor / Builder on completion of Plastering and Painting. Sealing of Windows and Doors, including cladding and cover strips, will be quoted for and itemized separately where required, and if not itemized, is excluded from this quotation. Wilhoete Aluminium will supply access ladders and equipment up to a maximum height of 2.5 meters. All and any scaffolding and lifting equipment (Hoists, Cherry Picker) is the responsibility of the client and, unless specifically detailed in this quotation, is excluded. Client to provide power onsite.',
+            ),
+
+            pw.Text(
+              'Transfer of installed product ownership:',
+              style: headingStyle,
+              textAlign: pw.TextAlign.left,
+            ),
+            smallGap,
+            para(
+              'The Client hereby acknowledges that all products manufactured & installed by Wilhoete glass and Aluminium remains the property of Wilhoete glass and Aluminium until such time as the account is paid in full. The Client hereby authorizes Wilhoete glass and Aluminium to enter the property and remove any or all of its products installed should full payment not be received within the payment terms detailed above or agreed by the parties (client and Wilhoete glass and Aluminium). Should the Client be a contractor or builder who is not also the owner of the property at which the product is being installed, then, at the sole discretion of Wilhoete glass and Aluminium, the Client undertakes to obtain the owners written consent and signature to the attached Annexure A confirming the owners acceptance of the terms and conditions referred to in these terms.',
+            ),
+
+            pw.Text(
+              'Acceptance of the Quotation:',
+              style: headingStyle,
+              textAlign: pw.TextAlign.left,
+            ),
+            smallGap,
+            para(
+              'The Client confirms that they have read all above conditions and have accepted such. This quote is Valid for a period of 14 Days from date of Quotation. The Signee confirms that they have checked the sizes, configuration and directions, glass and colour used on all components.',
+            ),
+
+            pw.SizedBox(height: 20),
+            pw.Text(
+              'Signed at________________on the________day of_________202_____',
+              style: bodyStyle,
+              textAlign: pw.TextAlign.left,
+            ),
+          ];
         },
       ),
     );
@@ -299,10 +580,13 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
       appBar: AppBar(
         title: const Text('Quotation PDF Preview'),
         actions: [
-          // Button to toggle unit price column visibility
           IconButton(
-            icon: Icon(widget.showUnitPrice ? Icons.visibility : Icons.visibility_off),
-            tooltip: widget.showUnitPrice ? 'Hide Unit Price' : 'Show Unit Price',
+            icon: Icon(
+              widget.showUnitPrice ? Icons.visibility : Icons.visibility_off,
+            ),
+            tooltip: widget.showUnitPrice
+                ? 'Hide Unit Price'
+                : 'Show Unit Price',
             onPressed: () {
               Navigator.pushReplacement(
                 context,
@@ -319,7 +603,6 @@ class _QuotationPdfPreviewState extends State<QuotationPdfPreview> {
       ),
       body: Column(
         children: [
-          // Filename field for user to edit, default is client name
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
