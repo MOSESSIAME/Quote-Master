@@ -1,13 +1,14 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// ignore: depend_on_referenced_packages
+
 import 'quotation.dart';
 import 'quotation_form_screen.dart';
 import 'quotation_detail_screen.dart';
 
-/// HomeScreen with a clearer dotted pattern background (improved visibility).
-/// Logic (load/save/edit/delete/search) remains unchanged.
+/// HomeScreen with dotted background and search
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -57,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     final data = jsonEncode(quotations.map((e) => e.toJson()).toList());
     await prefs.setString('quotations', data);
+    // Re-apply current search after saving so UI stays in sync
     _filterQuotations(_searchController.text);
   }
 
@@ -81,19 +83,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _saveQuotations();
   }
 
+  /// Helper to find the original index of a quotation when we’re working
+  /// with the filtered list.
   int _findOriginalIndex(Quotation q) {
     final byIdentity = quotations.indexOf(q);
     if (byIdentity != -1) return byIdentity;
 
     final idx = quotations.indexWhere((element) {
       final sameName =
-          (element.clientName ?? '').toString() ==
-          (q.clientName ?? '').toString();
+          (element.clientName).toString() == (q.clientName).toString();
       final sameNumber =
-          (element.quoteNumber ?? '').toString() ==
-          (q.quoteNumber ?? '').toString();
-      final sameDate =
-          (element.date ?? '').toString() == (q.date ?? '').toString();
+          (element.quoteNumber).toString() == (q.quoteNumber).toString();
+      final sameDate = (element.date).toString() == (q.date).toString();
       return (sameNumber && sameName) ||
           (sameName && sameDate) ||
           (sameNumber && sameDate);
@@ -101,6 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return idx;
   }
 
+  /// Main search logic.
+  /// - Name: partial match
+  /// - Quote number: partial match (string)
+  /// - Date: accepts `yyyy-MM-dd` or `dd/MM/yyyy`
   void _filterQuotations(String query) {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) {
@@ -112,23 +117,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
     String formatDateCandidate(dynamic dateValue) {
       if (dateValue == null) return '';
+
+      // Already a DateTime
       if (dateValue is DateTime) {
-        return DateFormat('yyyy-MM-dd').format(dateValue) +
-            '|' +
-            DateFormat('dd/MM/yyyy').format(dateValue);
+        return [
+          DateFormat('yyyy-MM-dd').format(dateValue),
+          DateFormat('dd/MM/yyyy').format(dateValue),
+        ].join('|');
       }
+
+      // Stored as String
       if (dateValue is String) {
+        // Try parse ISO first
         try {
           final parsed = DateTime.parse(dateValue);
-          return DateFormat('yyyy-MM-dd').format(parsed) +
-              '|' +
-              DateFormat('dd/MM/yyyy').format(parsed) +
-              '|' +
-              dateValue;
+          return [
+            DateFormat('yyyy-MM-dd').format(parsed),
+            DateFormat('dd/MM/yyyy').format(parsed),
+            dateValue,
+          ].join('|');
         } catch (_) {
+          // Not ISO. Return as-is so user can still search the raw string.
           return dateValue;
         }
       }
+
       return dateValue.toString();
     }
 
@@ -136,7 +149,9 @@ class _HomeScreenState extends State<HomeScreen> {
       filteredQuotations = quotations.where((quotation) {
         final name = (quotation.clientName ?? '').toString().toLowerCase();
         final number = (quotation.quoteNumber ?? '').toString().toLowerCase();
-        final dateString = formatDateCandidate(quotation.date).toLowerCase();
+        final dateString = formatDateCandidate(
+          quotation.date,
+        ).toLowerCase(); // includes both formats
 
         final matchesName = name.contains(q);
         final matchesNumber = number.contains(q);
@@ -177,12 +192,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Stack(
         children: [
-          // Dotted pattern background painter
+          // Dotted background
           const Positioned.fill(
             child: CustomPaint(painter: _DottedBackgroundPainter()),
           ),
 
-          // Reduced-strength translucent gradient overlay so pattern shows through
+          // Gradient wash over background
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -190,19 +205,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: const Alignment(-0.9, -1),
                   end: const Alignment(1, 1),
                   colors: [
-                    // Using fromRGBO to allow opacity and non-const
-                    Color.fromRGBO(
-                      246,
-                      241,
-                      255,
-                      0.72,
-                    ), // light purple tint with transparency
-                    Color.fromRGBO(
-                      255,
-                      255,
-                      255,
-                      0.95,
-                    ), // near-white but slightly transparent
+                    Color.fromRGBO(246, 241, 255, 0.72),
+                    Color.fromRGBO(255, 255, 255, 0.95),
                   ],
                   stops: const [0, 1],
                 ),
@@ -216,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: Column(
                 children: [
-                  // Search card
+                  // Search bar
                   Material(
                     elevation: 4,
                     shadowColor: Colors.black26,
@@ -232,12 +236,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Padding(
-                            padding: EdgeInsets.only(right: 8.0),
-                            child: Icon(
-                              Icons.search,
-                              size: 22,
-                              color: Color(0xFF6D4CFF),
+                          // SEARCH BUTTON (tap this to search what you typed)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.search,
+                                size: 22,
+                                color: Color(0xFF6D4CFF),
+                              ),
+                              onPressed: () =>
+                                  _filterQuotations(_searchController.text),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              tooltip: 'Search',
                             ),
                           ),
                           Expanded(
@@ -254,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 isDense: true,
                               ),
                               textInputAction: TextInputAction.search,
-                              onSubmitted: (value) => _filterQuotations(value),
+                              onSubmitted: _filterQuotations,
                             ),
                           ),
                           if (_searchController.text.isNotEmpty)
@@ -283,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 12),
 
-                  // List or empty states in a soft card container
+                  // List / empty states
                   Expanded(
                     child: quotations.isEmpty
                         ? Center(
@@ -313,14 +325,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             itemBuilder: (context, index) {
                               final q = listToShow[index];
 
-                              // compute date display safely
+                              // Format date safely
                               String dateDisplay = '';
                               try {
                                 if (q.date != null) {
                                   if (q.date is DateTime) {
                                     dateDisplay = DateFormat(
                                       'yyyy-MM-dd',
-                                    ).format(q.date);
+                                    ).format(q.date as DateTime);
                                   } else {
                                     final parsed = DateTime.tryParse(
                                       q.date.toString(),
@@ -350,15 +362,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                         builder: (_) => QuotationDetailScreen(
                                           quotation: q,
                                           onDelete: () {
-                                            if (originalIndex != -1)
+                                            if (originalIndex != -1) {
                                               _deleteQuotation(originalIndex);
+                                            }
                                           },
                                           onEdit: (newQ) {
-                                            if (originalIndex != -1)
+                                            if (originalIndex != -1) {
                                               _editQuotation(
                                                 originalIndex,
                                                 newQ,
                                               );
+                                            }
                                           },
                                         ),
                                       ),
@@ -377,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        // avatar / icon
+                                        // avatar / initial
                                         Container(
                                           width: 44,
                                           height: 44,
@@ -417,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ),
                                         const SizedBox(width: 12),
-                                        // main text
+                                        // text
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
@@ -477,7 +491,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ),
                                         const SizedBox(width: 8),
-                                        // chevron
                                         const Icon(
                                           Icons.chevron_right,
                                           color: Colors.black38,
@@ -498,30 +511,22 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  DateFormat(String s) {}
 }
 
-/// Custom painter that draws a clearer dotted grid pattern.
-/// Spacing/dotSize adapt to the canvas size so pattern looks good on phones and desktops.
+/// Dotted background painter used for soft pattern.
 class _DottedBackgroundPainter extends CustomPainter {
   const _DottedBackgroundPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
-    // Dot color: slightly stronger purple/grey with higher opacity
     paint.color = const Color(0xFF9E8CFF).withOpacity(0.10);
 
-    // Determine spacing and dot size based on shortest side to keep pattern proportional
     final shortest = size.shortestSide;
-    // spacing: denser dots than before (smaller numbers), but still clamped
     final spacing = (shortest / 18).clamp(14.0, 32.0);
-    final dotSize = (shortest / 380).clamp(1.4, 4.0); // radius
+    final dotSize = (shortest / 380).clamp(1.4, 4.0);
 
-    // draw dots in a grid
     for (double y = 0; y < size.height + spacing; y += spacing) {
-      // Offset every other row for a subtle pattern
       final rowOffset = ((y / spacing) % 2 == 0) ? 0.0 : spacing / 2;
       for (double x = -spacing; x < size.width + spacing; x += spacing) {
         final dx = x + rowOffset;
@@ -529,10 +534,10 @@ class _DottedBackgroundPainter extends CustomPainter {
       }
     }
 
-    // Decorative faint circles in corners for depth with slightly stronger opacity
     final cornerPaint = Paint()
       ..style = PaintingStyle.fill
       ..color = const Color(0xFF7C4DFF).withOpacity(0.035);
+
     canvas.drawCircle(
       Offset(size.width * 0.06, size.height * 0.08),
       shortest * 0.09,

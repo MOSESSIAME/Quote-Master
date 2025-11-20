@@ -6,7 +6,7 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF673AB7); // Deep Purple
-    const accentColor = Color(0xFF9575CD);  // Lighter purple
+    const accentColor = Color(0xFF9575CD); // Lighter purple
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -57,7 +57,7 @@ class WelcomePage extends StatelessWidget {
                                   color: Colors.black26,
                                   blurRadius: 12,
                                   offset: Offset(0, 4),
-                                )
+                                ),
                               ],
                             ),
                             padding: const EdgeInsets.all(36),
@@ -83,7 +83,7 @@ class WelcomePage extends StatelessWidget {
                                     color: Colors.black26,
                                     blurRadius: 8,
                                     offset: Offset(2, 2),
-                                  )
+                                  ),
                                 ],
                               ),
                               textAlign: TextAlign.center,
@@ -106,10 +106,14 @@ class WelcomePage extends StatelessWidget {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.of(context).pushReplacementNamed('/home');
+                                Navigator.of(
+                                  context,
+                                ).pushReplacementNamed('/home');
                               },
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 backgroundColor: Colors.white,
                                 foregroundColor: primaryColor,
                                 shape: RoundedRectangleBorder(
@@ -135,7 +139,7 @@ class WelcomePage extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 18.0, top: 8),
                   child: Center(
                     child: Text(
-                      'Copyright© Moses Siame 2025',
+                      'Copyright© Quote Master 2025',
                       style: TextStyle(
                         color: Colors.white54,
                         fontSize: 14,
@@ -145,7 +149,7 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
