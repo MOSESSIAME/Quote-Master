@@ -111,18 +111,24 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.existing != null ? "Edit Quotation" : "New Quotation"),
+        title: Text(
+          widget.existing != null ? "Edit Quotation" : "New Quotation",
+        ),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text("Client Details", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              "Client Details",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             TextFormField(
               controller: _clientNameController,
               decoration: const InputDecoration(labelText: "Client Name"),
-              validator: (val) => val == null || val.isEmpty ? "Enter client name" : null,
+              validator: (val) =>
+                  val == null || val.isEmpty ? "Enter client name" : null,
             ),
             TextFormField(
               controller: _clientAddressController,
@@ -141,14 +147,19 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
               decoration: const InputDecoration(labelText: "ATTN"),
             ),
             const SizedBox(height: 16),
-            const Text("Quotation Details", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              "Quotation Details",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             Row(
               children: [
                 Expanded(
                   child: TextFormField(
                     controller: _quoteNumberController,
                     decoration: const InputDecoration(labelText: "Quote No."),
-                    validator: (val) => val == null || val.isEmpty ? "Enter quote number" : null,
+                    validator: (val) => val == null || val.isEmpty
+                        ? "Enter quote number"
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -182,7 +193,8 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
                   child: ListTile(
                     title: Text(item.description),
                     subtitle: Text(
-                        "Code: ${item.code}, Qty: ${item.quantity}, Area: ${item.area.toStringAsFixed(2)}, Net: K${item.netPrice.toStringAsFixed(2)}"),
+                      "Code: ${item.code}, Qty: ${item.quantity}, Area: ${item.area.toStringAsFixed(2)}, Net: K${item.netPrice.toStringAsFixed(2)}",
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () => _removeItem(index),
@@ -213,12 +225,24 @@ class _QuotationFormScreenState extends State<QuotationFormScreen> {
               onChanged: (val) => _terms = val,
             ),
             const SizedBox(height: 16),
-            Text("Total Area: ${_totalArea.toStringAsFixed(2)} sqm", style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text("TOTAL PRICE (K): ${_totalPrice.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.purple)),
+            Text(
+              "Total Area: ${_totalArea.toStringAsFixed(2)} sqm",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              "TOTAL PRICE (K): ${_totalPrice.toStringAsFixed(2)}",
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.purple,
+              ),
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _onSave,
-              child: Text(widget.existing != null ? "Update Quotation" : "Save Quotation"),
+              child: Text(
+                widget.existing != null ? "Update Quotation" : "Save Quotation",
+              ),
             ),
           ],
         ),
